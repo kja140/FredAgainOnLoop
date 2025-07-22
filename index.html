@@ -43,28 +43,58 @@
 <body>
 
   <button id="unmute">🔊 Unmute Audio</button>
+<script>
+  let player
+  let videoIds = []
+  let currentIndex = 0
 
-  <script>
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[array[i], array[j]] = [array[j], array[i]]
+    }
+    return array
+  }
+
+  function onYouTubeIframeAPIReady() {
     fetch('ids.json')
       .then(res => res.json())
       .then(ids => {
-        const shuffled = ids.sort(() => Math.random() - 0.5);
-        const first = shuffled[0];
-        const rest = shuffled.slice(1).join(',');
+        videoIds = shuffle(ids)
+        loadVideo(videoIds[currentIndex])
+      })
+  }
 
-        const iframe = document.createElement('iframe');
-        iframe.src = `https://www.youtube.com/embed/${first}?autoplay=1&mute=1&controls=0&loop=1&playlist=${rest}&modestbranding=1&rel=0`;
-        iframe.allow = 'autoplay; fullscreen';
-        iframe.allowFullscreen = true;
-        iframe.id = 'player';
-        document.body.appendChild(iframe);
-
-        document.getElementById('unmute').addEventListener('click', () => {
-          iframe.src = iframe.src.replace('mute=1', 'mute=0');
-          document.getElementById('unmute').remove();
-        });
-      });
-  </script>
+  function loadVideo(id) {
+    if (player) {
+      player.loadVideoById(id)
+    } else {
+      player = new YT.Player('player', {
+        height: '100%',
+        width: '100%',
+        videoId: id,
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          showinfo: 0,
+          modestbranding: 1,
+          rel: 0,
+          loop: 0,
+          mute: 0,
+        },
+        events: {
+          onReady: event => event.target.playVideo(),
+          onStateChange: event => {
+            if (event.data === YT.PlayerState.ENDED) {
+              currentIndex = (currentIndex + 1) % videoIds.length
+              loadVideo(videoIds[currentIndex])
+            }
+          }
+        }
+      })
+    }
+  }
+</script>
 
 </body>
 </html>
