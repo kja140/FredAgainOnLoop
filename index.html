@@ -12,13 +12,14 @@
       height: 100%;
       background: black;
     }
-    iframe {
+    iframe, #player {
       border: none;
       width: 100vw;
       height: 100vh;
       position: absolute;
       top: 0;
       left: 0;
+      z-index: 1;
     }
     #unmute {
       position: absolute;
@@ -42,59 +43,70 @@
 </head>
 <body>
 
+  <div id="player"></div>
   <button id="unmute">🔊 Unmute Audio</button>
-<script>
-  let player
-  let videoIds = []
-  let currentIndex = 0
 
-  function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[array[i], array[j]] = [array[j], array[i]]
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    let player
+    let videoIds = []
+    let currentIndex = 0
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[array[i], array[j]] = [array[j], array[i]]
+      }
+      return array
     }
-    return array
-  }
 
-  function onYouTubeIframeAPIReady() {
-    fetch('ids.json')
-      .then(res => res.json())
-      .then(ids => {
-        videoIds = shuffle(ids)
-        loadVideo(videoIds[currentIndex])
-      })
-  }
+    function onYouTubeIframeAPIReady() {
+      fetch('ids.json')
+        .then(res => res.json())
+        .then(ids => {
+          videoIds = shuffle(ids)
+          loadVideo(videoIds[currentIndex])
+        })
+    }
 
-  function loadVideo(id) {
-    if (player) {
-      player.loadVideoById(id)
-    } else {
-      player = new YT.Player('player', {
-        height: '100%',
-        width: '100%',
-        videoId: id,
-        playerVars: {
-          autoplay: 1,
-          controls: 0,
-          showinfo: 0,
-          modestbranding: 1,
-          rel: 0,
-          loop: 0,
-          mute: 0,
-        },
-        events: {
-          onReady: event => event.target.playVideo(),
-          onStateChange: event => {
-            if (event.data === YT.PlayerState.ENDED) {
-              currentIndex = (currentIndex + 1) % videoIds.length
-              loadVideo(videoIds[currentIndex])
+    function loadVideo(id) {
+      if (player) {
+        player.loadVideoById(id)
+      } else {
+        player = new YT.Player('player', {
+          height: '100%',
+          width: '100%',
+          videoId: id,
+          playerVars: {
+            autoplay: 1,
+            controls: 0,
+            modestbranding: 1,
+            rel: 0,
+            showinfo: 0,
+            loop: 0,
+            mute: 0
+          },
+          events: {
+            onReady: event => event.target.playVideo(),
+            onStateChange: event => {
+              if (event.data === YT.PlayerState.ENDED) {
+                currentIndex = (currentIndex + 1) % videoIds.length
+                loadVideo(videoIds[currentIndex])
+              }
             }
           }
-        }
-      })
+        })
+      }
     }
-  }
-</script>
+
+    // Allow unmuting manually due to browser restrictions
+    document.getElementById('unmute').addEventListener('click', () => {
+      if (player) {
+        player.unMute()
+        player.setVolume(100)
+      }
+    })
+  </script>
 
 </body>
 </html>
