@@ -83,11 +83,13 @@
             modestbranding: 1,
             rel: 0,
             showinfo: 0,
-            loop: 0,
-            mute: 0
+            loop: 0
           },
           events: {
-            onReady: event => event.target.playVideo(),
+            onReady: event => {
+              event.target.mute()  // Start muted for autoplay to work
+              event.target.playVideo()
+            },
             onStateChange: event => {
               if (event.data === YT.PlayerState.ENDED) {
                 currentIndex = (currentIndex + 1) % videoIds.length
@@ -99,11 +101,11 @@
       }
     }
 
-    // Allow unmuting manually due to browser restrictions
     document.getElementById('unmute').addEventListener('click', () => {
       if (player) {
         player.unMute()
         player.setVolume(100)
+        document.getElementById('unmute').style.display = 'none'
       }
     })
   </script>
