@@ -21,24 +21,6 @@
       left: 0;
       z-index: 1;
     }
-    #unmute {
-      position: absolute;
-      z-index: 10;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.6);
-      color: white;
-      font-size: 1.5rem;
-      border: none;
-      padding: 0.75rem 2rem;
-      cursor: pointer;
-      border-radius: 0.5rem;
-      transition: opacity 0.3s ease;
-    }
-    #unmute:hover {
-      background: rgba(255,255,255,0.1);
-    }
   </style>
 </head>
 <body>
@@ -86,7 +68,6 @@
           },
           events: {
             onReady: event => {
-              event.target.mute()  // Start muted for autoplay to work
               event.target.playVideo()
             },
             onStateChange: event => {
