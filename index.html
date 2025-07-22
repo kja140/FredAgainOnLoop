@@ -6,72 +6,63 @@
   <title>Fred Again Live Loop</title>
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
       overflow: hidden;
-      height: 100%;
       background: black;
     }
-    /* Make sure the YT iframe is at z-index 1 */
-    #player, iframe {
-      border: none;
-      width: 100vw;
-      height: 100vh;
+    #player {
       position: absolute;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
       z-index: 1;
     }
-    /* Style + position the unmute button *above* the video */
-    #unmute {
+    #overlay {
       position: absolute;
-      z-index: 2;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.6);
-      color: #fff;
-      font-size: 1.2rem;
-      border: none;
-      padding: 0.6rem 1.2rem;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      colour: white;
+      font-size: 2rem;
+      text-align: center;
       cursor: pointer;
-      border-radius: 0.4rem;
-      transition: background 0.2s ease;
+      z-index: 2;
     }
-    #unmute:hover {
-      background: rgba(255,255,255,0.1);
+    #overlay:hover {
+      background: rgba(0,0,0,0.5);
     }
   </style>
 </head>
 <body>
 
   <div id="player"></div>
-  <button id="unmute">🔊 Unmute Audio</button>
+  <div id="overlay">Click anywhere to unmute</div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
-    let player;
-    let videoIds = [];
-    let currentIndex = 0;
+    let player, videoIds = [], idx = 0;
 
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+    function shuffle(a) {
+      for (let i=a.length-1; i>0; i--) {
+        let j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
       }
-      return arr;
+      return a;
     }
 
     function onYouTubeIframeAPIReady() {
       fetch('ids.json')
-        .then(r => r.json())
-        .then(ids => {
+        .then(r=>r.json())
+        .then(ids=>{
           videoIds = shuffle(ids);
-          startVideo(videoIds[0]);
+          createPlayer(videoIds[0]);
         });
     }
 
-    function startVideo(id) {
+    function createPlayer(id) {
       player = new YT.Player('player', {
         videoId: id,
         playerVars: {
@@ -84,25 +75,26 @@
         },
         events: {
           onReady: e => {
-            e.target.mute();      // mute for autoplay to work
+            e.target.mute();
             e.target.playVideo();
           },
           onStateChange: e => {
             if (e.data === YT.PlayerState.ENDED) {
-              currentIndex = (currentIndex + 1) % videoIds.length;
-              player.loadVideoById(videoIds[currentIndex]);
+              idx = (idx + 1) % videoIds.length;
+              player.loadVideoById(videoIds[idx]);
             }
           }
         }
       });
     }
 
-    document.getElementById('unmute').addEventListener('click', () => {
+    // Unmute on any click
+    document.getElementById('overlay').addEventListener('click', () => {
       if (player) {
         player.unMute();
         player.setVolume(100);
-        document.getElementById('unmute').style.display = 'none';
       }
+      document.getElementById('overlay').style.display = 'none';
     });
   </script>
 
