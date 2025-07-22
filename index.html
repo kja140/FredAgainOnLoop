@@ -2,26 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Fred Again Loop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fred Again Live Loop</title>
   <style>
     html, body {
       margin: 0;
-      height: 100%;
+      padding: 0;
       overflow: hidden;
+      height: 100%;
       background: black;
     }
     iframe {
-      width: 100%;
-      height: 100%;
       border: none;
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    #unmute {
+      position: absolute;
+      z-index: 10;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: white;
+      font-size: 1.5rem;
+      border: none;
+      padding: 0.75rem 2rem;
+      cursor: pointer;
+      border-radius: 0.5rem;
+      transition: opacity 0.3s ease;
+    }
+    #unmute:hover {
+      background: rgba(255,255,255,0.1);
     }
   </style>
 </head>
 <body>
-  <iframe
-    src="https://www.youtube.com/embed/videoseries?list=PLKvU2jOxi2xD37YSmvlVZ76I7m5VVLASu&autoplay=1&loop=1&mute=0&rel=0&modestbranding=1&controls=0&iv_load_policy=3"
-    allow="autoplay; fullscreen"
-    allowfullscreen>
-  </iframe>
+
+  <button id="unmute">🔊 Unmute Audio</button>
+
+  <script>
+    fetch('ids.json')
+      .then(res => res.json())
+      .then(ids => {
+        const shuffled = ids.sort(() => Math.random() - 0.5);
+        const first = shuffled[0];
+        const rest = shuffled.slice(1).join(',');
+
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube.com/embed/${first}?autoplay=1&mute=1&controls=0&loop=1&playlist=${rest}&modestbranding=1&rel=0`;
+        iframe.allow = 'autoplay; fullscreen';
+        iframe.allowFullscreen = true;
+        iframe.id = 'player';
+        document.body.appendChild(iframe);
+
+        document.getElementById('unmute').addEventListener('click', () => {
+          iframe.src = iframe.src.replace('mute=1', 'mute=0');
+          document.getElementById('unmute').remove();
+        });
+      });
+  </script>
+
 </body>
 </html>
